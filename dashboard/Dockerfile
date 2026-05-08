@@ -3,7 +3,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+#Instructions to build the specialized environment for the React dashboard.
 COPY package*.json ./
 
 # Install dependencies

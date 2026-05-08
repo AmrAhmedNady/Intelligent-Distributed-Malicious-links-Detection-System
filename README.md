@@ -6,6 +6,11 @@ Welcome to **NovaShield**, a highly responsive, distributed cybersecurity system
 
 ---
 
+### 🧠 Intelligence Core
+NovaShield is trained on the **[UCI Phishing Websites Dataset](https://archive.ics.uci.edu/ml/datasets/Phishing+Websites)**, a gold-standard academic repository containing over **11,000 expert-verified samples**. This ensures our AI brain is built on rigorous, real-world cybersecurity evidence.
+
+---
+
 ## 🏗️ Project Architecture
 
 NovaShield is built as a suite of modular microservices:

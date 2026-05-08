@@ -1,7 +1,4 @@
-"""
-Celery Worker.
-Pulls tasks from Redis, executes web crawls, and runs ML classification.
-"""
+
 import asyncio
 import logging
 import os
