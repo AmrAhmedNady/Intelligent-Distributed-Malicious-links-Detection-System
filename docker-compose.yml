@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: sg-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  coordinator:
+    build: .
+    command: python -m uvicorn coordinator.api:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./data:/app/data
+      - ./ml/models:/app/ml/models
+
+  worker:
+    build: .
+    command: python -m celery -A worker.worker_main.celery_app worker --pool=solo --loglevel=info
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./data:/app/data
+      - ./ml/models:/app/ml/models
+    deploy:
+      replicas: 2
+
+  dashboard:
+    build: ./dashboard
+    container_name: sg-dashboard
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://coordinator:8000
+    depends_on:
+      - coordinator

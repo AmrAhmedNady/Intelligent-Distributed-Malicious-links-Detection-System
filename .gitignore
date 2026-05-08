@@ -1,0 +1,6 @@
+dashboard/node_modules/
+coordinator/__pycache__/
+ml/__pycache__/
+worker/__pycache__/
+*.pyc
+data/spectraguard.db
