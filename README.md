@@ -58,25 +58,64 @@ graph TD
 
 ## 🚀 Getting Started
 
-NovaShield supports two primary execution modes: **Direct Mode** for local development and **Distributed Mode** for scalable deployments.
-
 ### 📋 Prerequisites
 
-*   **Python 3.10+**
-*   **Node.js 18+**
-*   **Docker & Docker Compose** (Required for Distributed Mode)
+*   **Docker & Docker Compose** (Recommended for easiest setup)
+*   **Python 3.11+**
+*   **Node.js 20+**
+
+---
+
+### ⚡ Quick Start (Docker Compose)
+The fastest way to get NovaShield running with all its microservices.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/AmrAhmedNady/NovaShield-final-distributed.git
+cd NovaShield-final-distributed
+
+# 2. Spin up the entire stack
+docker-compose up --build
+```
+*Access the Dashboard at: [http://localhost:5173](http://localhost:5173)*
 
 ---
 
 ### 🛠️ Mode 1: Direct Mode (Local Development)
-Ideal for quick testing and single URL scans.
+Ideal for debugging and contributing to the code.
 
-#### 1. Terminal 1: Backend API
+#### 1. Setup Environment
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Train the initial ML model
+python train_model.py
+
+# Install Frontend dependencies
+cd dashboard
+npm install
+cd ..
+```
+
+#### 2. Start Services (In separate terminals)
+
+**Terminal 1: Redis Broker**
+```bash
+docker run -d -p 6379:6379 --name ns-redis redis:7-alpine
+```
+
+**Terminal 2: Coordinator API**
 ```bash
 python -m uvicorn coordinator.api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 2. Terminal 2: Frontend Dashboard
+**Terminal 3: Celery Worker**
+```bash
+python -m celery -A worker.worker_main.celery_app worker --pool=solo --loglevel=info
+```
+
+**Terminal 4: Dashboard**
 ```bash
 cd dashboard
 npm run dev
@@ -84,25 +123,18 @@ npm run dev
 
 ---
 
-### 🚀 Mode 2: Distributed Mode (High-Performance)
-Use this mode to handle large volumes of URLs across multiple worker nodes.
+### 🚀 Mode 2: Distributed Mode (Scaling Workers)
+When using Docker Compose, you can easily scale your workers to handle more load.
 
-#### 1. Start the Message Broker (Redis)
-Ensure you have Redis running (either natively or via a simple Docker container):
 ```bash
-docker run -d -p 6379:6379 --name ns-redis redis:7-alpine
+# Scale to 5 worker instances
+docker-compose up -d --scale worker=5
 ```
 
-#### 2. Start the Celery Worker(s)
-Open one or more terminals and run the following to create your worker cluster:
-```bash
-python -m celery -A worker.worker_main.celery_app worker --pool=solo --loglevel=info
-```
-*   **To Scale**: Simply open more terminals and run the same command. Each new terminal adds more "muscle" to the system.
-
-#### 3. Management
-*   **Clear Queue**: Handled automatically on restart.
-*   **Stop System**: Press `Ctrl+C` in each terminal and run `docker stop ns-redis`.
+#### Management Commands
+*   **Stop System**: `docker-compose down`
+*   **View Logs**: `docker-compose logs -f`
+*   **Reset Data**: `rm -rf data/*.db` (Caution: deletes scan history)
 
 ## 🔒 Service Reference
 
