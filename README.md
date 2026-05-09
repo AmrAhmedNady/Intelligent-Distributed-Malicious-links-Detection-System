@@ -68,58 +68,41 @@ NovaShield supports two primary execution modes: **Direct Mode** for local devel
 
 ---
 
-### 🛠️ Option 1: Direct Mode (Native Execution)
+### 🛠️ Mode 1: Direct Mode (Local Development)
+Ideal for quick testing and single URL scans.
 
-Direct mode runs the system natively on your machine. This is ideal for development and quick testing. Open **three separate terminals**:
-
-#### 1. Terminal 1: Setup & Backend API
+#### 1. Terminal 1: Backend API
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Train the ML model (First run only)
-python train_model.py
-
-# Start the FastAPI coordinator
 python -m uvicorn coordinator.api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 #### 2. Terminal 2: Frontend Dashboard
 ```bash
 cd dashboard
-npm install
 npm run dev
 ```
 
-#### 3. Terminal 3 (Optional): Local Distributed Worker
-If you want to test the distributed queue locally without Docker, run these (requires Redis installed locally or via Docker):
-```bash
-# Start Redis (via Docker)
-docker run -d -p 6379:6379 --name ns-redis redis:7-alpine
+---
 
-# Start Celery Worker
+### 🚀 Mode 2: Distributed Mode (High-Performance)
+Use this mode to handle large volumes of URLs across multiple worker nodes.
+
+#### 1. Start the Message Broker (Redis)
+Ensure you have Redis running (either natively or via a simple Docker container):
+```bash
+docker run -d -p 6379:6379 --name ns-redis redis:7-alpine
+```
+
+#### 2. Start the Celery Worker(s)
+Open one or more terminals and run the following to create your worker cluster:
+```bash
 python -m celery -A worker.worker_main.celery_app worker --pool=solo --loglevel=info
 ```
+*   **To Scale**: Simply open more terminals and run the same command. Each new terminal adds more "muscle" to the system.
 
----
-
-### 🐳 Option 2: Distributed Mode (Docker)
-
-Distributed mode leverages Celery workers and a Redis broker to handle high volumes of scans automatically.
-
-#### 1. Launch the Full Stack
-Ensure Docker Desktop is running, then execute:
-
-```bash
-docker-compose up --build -d
-```
-
-#### 2. Management Commands
-*   **View Logs**: `docker-compose logs -f`
-*   **Scale Workers**: `docker-compose up -d --scale worker=5`
-*   **Stop System**: `docker-compose down`
-
----
+#### 3. Management
+*   **Clear Queue**: Handled automatically on restart.
+*   **Stop System**: Press `Ctrl+C` in each terminal and run `docker stop ns-redis`.
 
 ## 🔒 Service Reference
 
